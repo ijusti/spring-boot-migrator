@@ -1,9 +1,15 @@
 - name: boot-2.7-3.0-dependency-version-update
-  description: Update Spring Boot dependencies from 2.7 to 3.0
+  description: Bump spring-boot-starter-parent from 2.7.x to 3.0.0-M3
   condition:
-    type: org.springframework.sbm.boot.upgrade_27_30.conditions.HasSpringBoot27Parent
+    type: org.springframework.sbm.build.migration.conditions.HasParentPom
+    groupId: org.springframework.boot
+    artifactId: spring-boot-starter-parent
   actions:
-    - type: org.springframework.sbm.boot.upgrade_27_30.actions.Boot_27_30_UpdateDependenciesAction
-      description: Update Spring Boot dependencies from 2.7 to 3.0
+    - type: org.springframework.sbm.build.migration.actions.BumpParentPomVersion
+      groupId: org.springframework.boot
+      artifactId: spring-boot-starter-parent
+      version: 3.0.0-M3
+      description: Bump spring-boot-starter-parent from 2.7.x to 3.0.0-M3
       condition:
-        type: org.springframework.sbm.boot.upgrade_27_30.conditions.HasSpringBoot27Parent
+        type: org.springframework.sbm.boot.common.conditions.HasSpringBootStarterParent
+        versionPattern: 2\\.7\\..*
