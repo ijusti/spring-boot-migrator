@@ -125,4 +125,7 @@ public interface BuildFile extends ProjectResource {
      */
     void excludeDependencies(List<Dependency> excludedDependencies);
 
+    void addRepository(RepositoryDefinition repository);
+
+    List<RepositoryDefinition> getRepositories();
 }

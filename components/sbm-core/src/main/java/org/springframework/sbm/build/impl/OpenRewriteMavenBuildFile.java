@@ -40,6 +40,7 @@ import org.openrewrite.maven.tree.Pom;
 import org.openrewrite.maven.tree.Scope;
 import org.openrewrite.xml.tree.Xml;
 import org.springframework.context.ApplicationEventPublisher;
+import org.openrewrite.maven.AddMavenRepository;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -523,6 +524,22 @@ public class OpenRewriteMavenBuildFile extends RewriteSourceFileHolder<Maven> im
     public void excludeDependencies(List<Dependency> excludedDependencies) {
         excludeDependenciesInner(excludedDependencies);
         updateClasspathRegistry();
+    }
+
+    @Override
+    public void addRepository(RepositoryDefinition repository) {
+        AddMavenRepository addMavenRepository = new AddMavenRepository(repository);
+        apply(addMavenRepository);
+    }
+
+    @Override
+    public List<RepositoryDefinition> getRepositories() {
+        return getPom().getModel().getRepositories().stream()
+                .map(r -> RepositoryDefinition.builder()
+                        .name(r.getId())
+                        .url(r.getUri().toString())
+                        .build()
+                ).collect(Collectors.toList());
     }
 
     private boolean anyRegexMatchesCoordinate(Plugin p, String... regex) {
