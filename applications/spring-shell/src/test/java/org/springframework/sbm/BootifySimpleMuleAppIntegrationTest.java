@@ -85,13 +85,6 @@ public class BootifySimpleMuleAppIntegrationTest extends IntegrationTestBaseClas
 
     @Test
     @Tag("integration")
-    @DisabledIfSystemProperty(named= "os.arch", matches = "aarch64", disabledReason = "imbcom/mq image not supported with Apple Silicon")
-    void t1_testWebsphereMqMigration() throws JMSException, InterruptedException {
-        checkWmqIntegration(rabbitMqContainer.getNetwork());
-    }
-
-    @Test
-    @Tag("integration")
     public void  t0_springIntegrationWorks() throws IOException, TimeoutException, InterruptedException {
         intializeTestProject();
         scanProject();
@@ -112,6 +105,13 @@ public class BootifySimpleMuleAppIntegrationTest extends IntegrationTestBaseClas
         checkSendHttpMessage(container.getContainer().getMappedPort(9081));
         checkInboundGatewayHttpMessage(container.getContainer().getMappedPort(9081));
         checkRabbitMqIntegration(ampqChannel);
+    }
+
+    @Test
+    @Tag("integration")
+    @DisabledIfSystemProperty(named= "os.arch", matches = "aarch64", disabledReason = "imbcom/mq image not supported with Apple Silicon")
+    void t1_testWebsphereMqMigration() throws JMSException, InterruptedException {
+        checkWmqIntegration(rabbitMqContainer.getNetwork());
     }
 
 
