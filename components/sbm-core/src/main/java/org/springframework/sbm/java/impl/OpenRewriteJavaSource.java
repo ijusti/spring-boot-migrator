@@ -15,6 +15,7 @@
  */
 package org.springframework.sbm.java.impl;
 
+import org.openrewrite.java.ChangePackage;
 import org.springframework.sbm.java.api.*;
 import org.springframework.sbm.java.migration.visitor.ReplaceLiteralVisitor;
 import org.springframework.sbm.java.refactoring.JavaRefactoring;
@@ -213,6 +214,12 @@ public class OpenRewriteJavaSource extends RewriteSourceFileHolder<J.Compilation
     @Override
     public void removeUnusedImports() {
         apply(new RemoveUnusedImports());
+    }
+
+    @Override
+    public void replaceImport(String p, String replace) {
+        ChangePackage changePackage = new ChangePackage(p, replace, true);
+        apply(changePackage);
     }
 
     /**
