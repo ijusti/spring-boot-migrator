@@ -646,7 +646,6 @@ public class OpenRewriteMavenBuildFile extends RewriteSourceFileHolder<Xml.Docum
             @Nullable Parent parent = getPom().getPom().getRequested().getParent();
             apply(
                     new UpgradeParentVersion(parent.getGroupId(), parent.getArtifactId(), version, null)
-                            .doNext(new RefreshPomModel())
             );
 //            List<Xml.Document> parse = MavenParser.builder().build().parseInputs(List.of(new Parser.Input(getAbsolutePath(), () -> new ByteArrayInputStream(print().getBytes(StandardCharsets.UTF_8)))), getAbsoluteProjectDir(), executionContext);
 //            replaceWith(parse.get(0));
