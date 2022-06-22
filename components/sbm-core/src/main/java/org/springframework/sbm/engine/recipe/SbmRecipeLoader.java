@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.sbm.engine.recipe;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
+import org.springframework.sbm.project.resource.ResourceHelper;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,25 +29,34 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class RecipesBuilder {
+public class SbmRecipeLoader implements RecipeLoader {
 
-    // TODO: Unify with Recipes to only have one list of recipes.
-    @Deprecated(forRemoval = true)
-    @Autowired(required = false)
-    private List<Recipe> beanRecipes;
-
+    static final String PATTERN = "classpath*:/recipes/*";
     private final RecipeParser recipeParser;
+    private final ResourceHelper resourceHelper;
 
-    private final List<RecipeLoader> recipeLoader;
+    public Resource[] loadRecipeResources() {
+        return resourceHelper.loadResources(PATTERN);
+    }
 
-    private Recipes recipes;
+    @Override
+    public List<Recipe> loadRecipes() {
 
-    public Recipes buildRecipes() {
-        if(recipes == null) {
-            List<Recipe> recipeList = new ArrayList<>();
-            recipeLoader.forEach(rl -> recipeList.addAll(rl.loadRecipes()));
-            recipes = new Recipes(recipeList);
+        Resource[] files = loadRecipeResources();
+
+        if(log.isDebugEnabled()) {
+            log.debug("Recipes loading...");
+            for (Resource r : files) {
+                log.debug(r.toString());
+            }
+            log.debug("Recipes loading... DONE");
         }
-        return recipes;
+
+        List<Recipe> recipeList = Arrays.stream(files)
+                .peek(f -> log.debug("loading Recipe " + f.toString()))
+                .flatMap(f -> Arrays.stream(recipeParser.parseRecipe(f)))
+                .collect(Collectors.toList());
+
+        return recipeList;
     }
 }

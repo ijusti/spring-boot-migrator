@@ -13,15 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.springframework.sbm.engine.recipe;
 
-import org.springframework.sbm.project.resource.ResourceHelper;
-import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.Resource;
+import org.openrewrite.config.Environment;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
-public interface RecipeLoader {
-    List<Recipe> loadRecipes();
+@Component
+public class RewriteRecipeLoader implements RecipeLoader {
+    @Override
+    public List<Recipe> loadRecipes() {
+        List<Recipe> recipeList = new ArrayList<>();
+
+        Environment environment = Environment.builder()
+                .scanRuntimeClasspath()
+                .build();
+
+        environment.listRecipes().forEach(r -> {
+            Recipe recipe = new Recipe("Rewrite: " + r.getDisplayName(), r.getDescription(), Condition.TRUE, List.of(new OpenRewriteRecipeAdapterAction(r)));
+            recipeList.add(recipe);
+        });
+
+        return recipeList;
+    }
 }
