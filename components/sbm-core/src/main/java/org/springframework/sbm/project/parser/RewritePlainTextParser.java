@@ -41,7 +41,11 @@ public class RewritePlainTextParser extends PlainTextParser {
 
         while(var5.hasNext()) {
             Parser.Input source = (Parser.Input)var5.next();
-            PlainText plainText = new PlainText(Tree.randomId(), relativeTo == null ? source.getPath() : relativeTo.relativize(source.getPath()).normalize(), source.getSource().getCharset().name(), source.getSource().isCharsetBomMarked(), Markers.EMPTY, source.getSource().readFully());
+            Path sourcePath = relativeTo == null ? source.getPath() : relativeTo.relativize(source.getPath()).normalize();
+            String charsetName = source.getSource().getCharset().name();
+            boolean charsetBomMarked = source.getSource().isCharsetBomMarked();
+            String content = source.getSource().readFully();
+            PlainText plainText = new PlainText(Tree.randomId(), sourcePath, Markers.EMPTY, charsetName, charsetBomMarked, null, null, content);
             plainTexts.add(plainText);
             parsingListener.parsed(source, plainText);
         }

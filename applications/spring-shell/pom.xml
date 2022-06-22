@@ -188,6 +188,7 @@
                         <include>**/*IntegrationTest.java</include>
                         <include>**/*ITCase.java</include>
                     </includes>
+                    <trimStackTrace>false</trimStackTrace>
                     <groups>integration</groups>
                     <classesDirectory>${project.build.outputDirectory}</classesDirectory>
                 </configuration>

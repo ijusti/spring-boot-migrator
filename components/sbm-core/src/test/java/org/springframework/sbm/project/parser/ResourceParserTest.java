@@ -100,19 +100,8 @@ class ResourceParserTest {
             parsedSourceFile.set(sourceFile);
             latch.countDown();
         } );
-        List<Resource> resources = getResourceAsList("some-file-parsed-by-plaintext.txt", "content");
-
-        PlainTextParser sut = new PlainTextParser();
-        Path filePath = null;
-        String fileContent = "";
-        Parser.Input pi = new Parser.Input(filePath, () -> new ByteArrayInputStream(fileContent.getBytes(StandardCharsets.UTF_8)));
-        List<PlainText> parsedResources = sut.parseInputs(List.of(
-                pi
-        ), null, ctx);
         latch.await(50, TimeUnit.MILLISECONDS);
-//        assertThat(parsedInput.get()).isSameAs(pi);
         assertThat(parsedInput.get()).isNull();
-//        assertThat(parsedSourceFile.get()).isSameAs(parsedResources.get(0));
         assertThat(parsedSourceFile.get()).isNull();
     }
 
