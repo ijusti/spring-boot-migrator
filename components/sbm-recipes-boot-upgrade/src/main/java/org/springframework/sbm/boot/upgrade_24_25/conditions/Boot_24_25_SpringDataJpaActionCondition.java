@@ -44,6 +44,6 @@ public class Boot_24_25_SpringDataJpaActionCondition implements Condition {
         List<MethodCall> callsToGetOneMethod = springDataJpaAnalyzer.findCallsToGetOneMethod(context);
         List<SpringDataJpaAnalyzer.MatchingMethod> jpaRepositoriesWithGetByIdMethod = springDataJpaAnalyzer.getJpaRepositoriesWithGetByIdMethod(context);
 
-        return !(callsToGetOneMethod.isEmpty() || jpaRepositoriesWithGetByIdMethod.isEmpty());
+        return !callsToGetOneMethod.isEmpty() || !jpaRepositoriesWithGetByIdMethod.isEmpty();
     }
 }
