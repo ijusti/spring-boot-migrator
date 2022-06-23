@@ -17,12 +17,18 @@
 package org.springframework.sbm.engine.recipe;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.config.YamlResourceLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.sbm.project.resource.ResourceHelper;
 import org.springframework.validation.beanvalidation.CustomValidatorBean;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -51,11 +57,20 @@ class OpenRewriteRecipeActionTest {
                 "    - type: org.springframework.sbm.engine.recipe.OpenRewriteRecipeAction\n" +
                 "      description: Call a OpenRewrite recipe\n" +
                 "      openRewriteRecipe: |-\n" +
-                "        some recipe code" +
-                "\n";
+                "        type: specs.openrewrite.org/v1beta/recipe\n" +
+                "        name: org.openrewrite.java.cleanup.JavaApiBestPractices\n" +
+                "        displayName: Java API best practices\n" +
+                "        description: Use the Java standard library in a way that is most idiomatic.\n" +
+                "        recipeList:\n" +
+                "          - org.openrewrite.java.cleanup.UseMapContainsKey\n";
 
         Recipe[] recipes = recipeParser.parseRecipe(yaml);
         assertThat(recipes[0].getActions().get(0)).isInstanceOf(OpenRewriteRecipeAction.class);
-        assertThat(((OpenRewriteRecipeAction)recipes[0].getActions().get(0)).getOpenRewriteRecipe()).isEqualTo("some recipe code");
+        String yamlRecipe = ((OpenRewriteRecipeAction) recipes[0].getActions().get(0)).getOpenRewriteRecipe();
+//        assertThat(yamlRecipe).isEqualTo("some recipe code");
+
+        YamlResourceLoader yamlResourceLoader = new YamlResourceLoader(new ByteArrayInputStream(yamlRecipe.getBytes(StandardCharsets.UTF_8)), URI.create("in-mem"), new Properties());
+        Collection<org.openrewrite.Recipe> rewriteYamlRecipe = yamlResourceLoader.listRecipes();
+        assertThat(rewriteYamlRecipe).hasSize(1);
     }
 }
