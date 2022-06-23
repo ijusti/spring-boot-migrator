@@ -1,6 +1,5 @@
 == How To
 
-
 === Check Preconditions
 Preconditions that must be met to allow a successful migration can be checked before scanning an application.
 This allows a user to be informed about unmet preconditions that would prevent a successful migration before the
@@ -90,6 +89,119 @@ See link:{repo}/blob/main/components/sbm-support-boot/src/main/resources/recipes
 A recipe can be defined as Spring bean using @Bean annotated method, see link:{repo}/blob/main/components/sbm-recipes-mule-to-boot/src/main/java/org/springframework/sbm/mule/MigrateMuleToBoot.java[MigrateMuleToBoot.java,window=_blank] for a recipe declared as Spring bean.
 
 NOTE: Remember to provide a description to all Actions to display the description to the user when the Action is applied.
+
+=== Using OpenRewrite Recipes
+
+==== Programmatically
+
+[source,java]
+....
+ProjectContext context = ...
+String annotationPattern = "@java.lang.Deprecated";
+org.openrewrite.java.RemoveAnnotation rewriteRecipe = new RemoveAnnotation(annotationPattern);
+context.getProjectJavaSources().apply(rewriteRecipe);
+....
+
+==== In SBM YAML
+
+===== Using Declarative OpenRewrite YAML
+
+Use `org.springframework.sbm.engine.recipe.OpenRewriteDeclarativeRecipeAdapter` to use embedded OpenRewrite YAML syntax in SBM YAML to run a declarative OpenRewrite recipe as SBM action.
+
+[source,yaml]
+....
+- name: test-recipe
+  description: "Remove @Deprecated annotations"
+  condition:
+    type: org.springframework.sbm.common.migration.conditions.TrueCondition
+  actions:
+    - type: org.springframework.sbm.engine.recipe.OpenRewriteDeclarativeRecipeAdapter
+      description: "Use a OpenRewrite recipe to remove @Deprecated annotations"
+      openRewriteRecipe: |-
+        type: specs.openrewrite.org/v1beta/recipe
+        name: org.openrewrite.java.RemoveAnnotation
+        displayName: "Remove @Deprecated annotation"
+        description: "Remove @Deprecated annotation"
+        recipeList:
+          - org.openrewrite.java.RemoveAnnotation:
+              annotationPattern: "@java.lang.Deprecated"
+....
+
+===== By Name
+
+Use `org.springframework.sbm.engine.recipe.OpenRewriteNamedRecipeAdapter` to run an OpenRewrite recipe by name as SBM action.
+Here an OpenRewrite recipe with name `org.springframework.sbm.dummy.RemoveDeprecatedAnnotation` must exist on the classpath and will be executed as action in `test-recipe`.
+
+[source,yaml]
+....
+- name: test-recipe
+  description: "Remove @Deprecated annotations"
+  condition:
+    type: org.springframework.sbm.common.migration.conditions.TrueCondition
+  actions:
+    - type: org.springframework.sbm.engine.recipe.OpenRewriteNamedRecipeAdapter
+      description: "Call a OpenRewrite recipe to remove @Deprecated annotations"
+      openRewriteRecipeName: org.springframework.sbm.dummy.RemoveDeprecatedAnnotation
+....
+
+==== In SBM Java code
+
+===== Using Declarative OpenRewrite YAML
+
+[source, java]
+....
+@Configuration
+public class SomeRecipe {
+
+    @Bean
+    Recipe someRecipe(RewriteRecipeLoader rewriteRecipeLoader, RewriteMigrationResultMerger resultMerger) {
+        return Recipe.builder()
+                ...
+                .action(
+                        OpenRewriteDeclarativeRecipeAdapter.builder()
+                                .rewriteRecipeLoader(rewriteRecipeLoader)
+                                .resultMerger(resultMerger)
+                                .openRewriteRecipe(
+                                    "type: specs.openrewrite.org/v1beta/recipe\n" +
+                                    "name: org.openrewrite.java.RemoveAnnotation\n" +
+                                    "displayName: \"Remove @Deprecated annotation\"\n" +
+                                    "description: \"Remove @Deprecated annotation\"\n" +
+                                    "recipeList:\n" +
+                                    "  - org.openrewrite.java.RemoveAnnotation:\n" +
+                                    "      annotationPattern: \"@java.lang.Deprecated\"\n"
+                                )
+                                .build())
+                ...
+                .build();
+    }
+}
+....
+
+===== By Name
+
+[source, java]
+....
+@Configuration
+public class SomeRecipe {
+
+    @Bean
+    Recipe someRecipe(RewriteRecipeLoader rewriteRecipeLoader, RewriteMigrationResultMerger resultMerger) {
+        return Recipe.builder()
+                ...
+                .action(
+                        OpenRewriteNamedRecipeAdapter.builder()
+                                .rewriteRecipeLoader(rewriteRecipeLoader)
+                                .resultMerger(resultMerger)
+                                .openRewriteRecipeName(
+                                    "org.springframework.sbm.dummy.RemoveDeprecatedAnnotation"
+                                )
+                                .build())
+                ...
+                .build();
+    }
+}
+....
+
 
 === Create a Condition
 Every `Action` and every `Recipe` must have a `Condition` which defines if the `Recipe` or `Action` is applicable.
