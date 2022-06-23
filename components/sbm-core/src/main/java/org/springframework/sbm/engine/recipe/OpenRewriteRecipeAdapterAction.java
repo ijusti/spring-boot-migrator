@@ -20,12 +20,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.extern.slf4j.Slf4j;
 import org.openrewrite.*;
 import org.openrewrite.Recipe;
-import org.openrewrite.java.tree.J;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.sbm.common.filter.AbsolutePathResourceFinder;
-import org.springframework.sbm.common.filter.AbsolutePathResourcesFinder;
 import org.springframework.sbm.engine.context.ProjectContext;
-import org.springframework.sbm.java.impl.Wrappers;
 import org.springframework.sbm.project.RewriteSourceFileWrapper;
 import org.springframework.sbm.project.resource.RewriteSourceFileHolder;
 
@@ -40,7 +37,7 @@ public class OpenRewriteRecipeAdapterAction extends AbstractAction {
 
     @JsonIgnore
     @Autowired
-    private RewriteSourceFileWrapper surceFileWrapper;
+    private RewriteMigrationResultMerger resultMerger;
 
 //    private final ModifiableProjectResourceFactory modifiableProjectResourceFactory = new ModifiableProjectResourceFactory();
 
@@ -74,53 +71,15 @@ public class OpenRewriteRecipeAdapterAction extends AbstractAction {
 
     @Override
     public String getDescription() {
-        return recipe.getDescription() == null ? recipe.getDisplayName() : recipe.getDescription();
+        return recipe.getDescription().isEmpty() ? recipe.getDisplayName() : recipe.getDescription();
     }
     
     @Override
     public void apply(ProjectContext context) {
         List<? extends SourceFile> rewriteSourceFiles = context.search(new OpenRewriteSourceFilesFinder());
         List<Result> results = recipe.run(rewriteSourceFiles);
-		syncResults(context, results);
+        resultMerger.mergeResults(context, results);
     }
 
-    private void syncResults(ProjectContext context, List<Result> results) {
-        // TODO: handle added
-        results.forEach(result -> {
-            SourceFile after = result.getAfter();
-            SourceFile before = result.getBefore();
-            if(after == null) {
-                handleDeleted(context, before);
-            }
-            else if(before == null) {
-                handleAdded(context, after);
-            }
-            else {
-                handleModified(context, after);
-            }
-        });
-    }
 
-    private void handleDeleted(ProjectContext context, SourceFile before) {
-        Path path = context.getProjectRootDirectory().resolve(before.getSourcePath());
-        RewriteSourceFileHolder<? extends SourceFile> filteredResources = context.search(new AbsolutePathResourceFinder(path)).get();
-        filteredResources.delete();
-    }
-
-    private void handleModified(ProjectContext context, SourceFile after) {
-        Path path = context.getProjectRootDirectory().resolve(after.getSourcePath());
-        RewriteSourceFileHolder<? extends SourceFile> filteredResources = context.search(new AbsolutePathResourceFinder(path)).get();
-        // TODO: handle situations where resource is not rewriteSourceFileHolder -> use predicates for known types to reuse, alternatively using the ProjectContextBuiltEvent might help
-        replaceWrappedResource(filteredResources, after);
-    }
-
-    private void handleAdded(ProjectContext context, SourceFile after) {
-        RewriteSourceFileHolder<? extends SourceFile> modifiableProjectResource = surceFileWrapper.wrapRewriteSourceFiles(context.getProjectRootDirectory(), List.of(after)).get(0);
-        context.getProjectResources().add(modifiableProjectResource);
-    }
-
-    private <T extends SourceFile> void replaceWrappedResource(RewriteSourceFileHolder<T> resource, SourceFile r) {
-        Class<? extends SourceFile> type = resource.getType();
-        resource.replaceWith((T) type.cast(r));
-    }
 }
