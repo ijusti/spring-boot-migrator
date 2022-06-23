@@ -32,6 +32,7 @@ import org.springframework.sbm.java.refactoring.JavaRefactoringFactoryImpl;
 import org.springframework.sbm.java.util.BasePackageCalculator;
 import org.springframework.sbm.java.util.JavaSourceUtil;
 import org.springframework.sbm.openrewrite.RewriteExecutionContext;
+import org.springframework.sbm.project.RewriteSourceFileWrapper;
 import org.springframework.sbm.project.TestDummyResource;
 import org.springframework.sbm.project.parser.DependencyHelper;
 import org.springframework.sbm.project.parser.ProjectContextInitializer;
@@ -462,7 +463,9 @@ public class TestProjectContext {
             when(gitSupport.repoExists(projectRoot.toFile())).thenReturn(true);
             when(gitSupport.getLatestCommit(projectRoot.toFile())).thenReturn(Optional.empty());
 
-            ProjectContextInitializer projectContextInitializer = new ProjectContextInitializer(projectContextFactory, rewriteMavenParserFactory, gitSupport);
+            RewriteSourceFileWrapper wrapper = new RewriteSourceFileWrapper();
+
+            ProjectContextInitializer projectContextInitializer = new ProjectContextInitializer(projectContextFactory, rewriteMavenParserFactory, gitSupport, wrapper);
             return projectContextInitializer;
         }
 
