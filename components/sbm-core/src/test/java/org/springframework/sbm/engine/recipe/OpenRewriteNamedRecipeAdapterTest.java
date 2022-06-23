@@ -49,13 +49,13 @@ public class OpenRewriteNamedRecipeAdapterTest {
     void recipeFromYaml() throws IOException {
         String yaml =
                 "- name: test-recipe\n" +
-                        "  description: Replace deprecated spring.datasource.* properties\n" +
-                        "  condition:\n" +
-                        "    type: org.springframework.sbm.common.migration.conditions.TrueCondition\n" +
-                        "  actions:\n" +
-                        "    - type: org.springframework.sbm.engine.recipe.OpenRewriteNamedRecipeAdapter\n" +
-                        "      description: Call a OpenRewrite recipe\n" +
-                        "      openRewriteRecipeName: org.springframework.sbm.dummy.RemoveDeprecatedAnnotation\n";
+                "  description: Replace deprecated spring.datasource.* properties\n" +
+                "  condition:\n" +
+                "    type: org.springframework.sbm.common.migration.conditions.TrueCondition\n" +
+                "  actions:\n" +
+                "    - type: org.springframework.sbm.engine.recipe.OpenRewriteNamedRecipeAdapter\n" +
+                "      description: Call a OpenRewrite recipe\n" +
+                "      openRewriteRecipeName: org.springframework.sbm.dummy.RemoveDeprecatedAnnotation\n";
 
         Recipe[] recipes = recipeParser.parseRecipe(yaml);
         assertThat(recipes[0].getActions().get(0)).isInstanceOf(OpenRewriteNamedRecipeAdapter.class);
