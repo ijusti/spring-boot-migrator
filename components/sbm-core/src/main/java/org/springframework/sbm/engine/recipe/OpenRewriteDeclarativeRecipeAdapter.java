@@ -17,6 +17,7 @@
 package org.springframework.sbm.engine.recipe;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.openrewrite.Recipe;
@@ -34,8 +35,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
+@Builder
 public class OpenRewriteDeclarativeRecipeAdapter extends AbstractAction {
-
     @Setter
     @Getter
     private String openRewriteRecipe;
