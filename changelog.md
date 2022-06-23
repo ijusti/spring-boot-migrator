@@ -1,4 +1,4 @@
-## [0.12.0](https://github.com/spring-projects-experimental/spring-boot-migrator/releases/tag/0.11.2) - 2022-05-27
+## [0.12.0](https://github.com/spring-projects-experimental/spring-boot-migrator/releases/tag/0.12.0) - 
 
 ### Adds
 - Reworked OpenRewrite recipe integration. (#181)
