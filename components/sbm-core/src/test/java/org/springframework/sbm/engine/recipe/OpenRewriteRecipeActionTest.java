@@ -17,7 +17,10 @@
 package org.springframework.sbm.engine.recipe;
 
 import org.junit.jupiter.api.Test;
+import org.openrewrite.Result;
 import org.openrewrite.config.YamlResourceLoader;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.tree.J;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.sbm.project.resource.ResourceHelper;
@@ -28,6 +31,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -58,11 +62,12 @@ class OpenRewriteRecipeActionTest {
                 "      description: Call a OpenRewrite recipe\n" +
                 "      openRewriteRecipe: |-\n" +
                 "        type: specs.openrewrite.org/v1beta/recipe\n" +
-                "        name: org.openrewrite.java.cleanup.JavaApiBestPractices\n" +
-                "        displayName: Java API best practices\n" +
-                "        description: Use the Java standard library in a way that is most idiomatic.\n" +
+                "        name: org.openrewrite.java.RemoveAnnotation\n" +
+                "        displayName: Order imports\n" +
+                "        description: Order imports\n" +
                 "        recipeList:\n" +
-                "          - org.openrewrite.java.cleanup.UseMapContainsKey\n";
+                "          - org.openrewrite.java.RemoveAnnotation:\n" +
+                "              annotationPattern: \"@java.lang.Deprecated\"\n";
 
         Recipe[] recipes = recipeParser.parseRecipe(yaml);
         assertThat(recipes[0].getActions().get(0)).isInstanceOf(OpenRewriteRecipeAction.class);
@@ -72,5 +77,19 @@ class OpenRewriteRecipeActionTest {
         YamlResourceLoader yamlResourceLoader = new YamlResourceLoader(new ByteArrayInputStream(yamlRecipe.getBytes(StandardCharsets.UTF_8)), URI.create("in-mem"), new Properties());
         Collection<org.openrewrite.Recipe> rewriteYamlRecipe = yamlResourceLoader.listRecipes();
         assertThat(rewriteYamlRecipe).hasSize(1);
+        org.openrewrite.Recipe rewriteRecipe = rewriteYamlRecipe.iterator().next();
+
+        List<J.CompilationUnit> javaParser = JavaParser.fromJavaVersion().build().parse(
+                        "@java.lang.Deprecated\n" +
+                        "public class Foo {\n" +
+                        "}\n"
+        );
+
+        List<Result> results = rewriteRecipe.run(javaParser);
+        Result result = results.get(0);
+        assertThat(result.getAfter().printAll()).isEqualTo(
+                "public class Foo {\n" +
+                "}\n"
+        );
     }
 }
