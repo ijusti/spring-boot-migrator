@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 public class RewriteRecipeLoader implements RecipeLoader {
@@ -38,5 +39,15 @@ public class RewriteRecipeLoader implements RecipeLoader {
         });
 
         return recipeList;
+    }
+
+    public org.openrewrite.Recipe loadRewriteRecipe(String recipeName) {
+        Environment environment = Environment.builder()
+                .scanRuntimeClasspath()
+                .build();
+
+        return environment.listRecipes().stream()
+                .filter(r -> r.getName().equals(recipeName)).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Could not find OpenRewrite recipe with name '%s'", recipeName)));
     }
 }
